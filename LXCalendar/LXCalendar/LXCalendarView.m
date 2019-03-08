@@ -21,6 +21,8 @@
 @property(nonatomic,strong)NSDate *currentMonthDate;//当月的日期
 @property(nonatomic,strong)UISwipeGestureRecognizer *leftSwipe;//左滑手势
 @property(nonatomic,strong)UISwipeGestureRecognizer *rightSwipe;//右滑手势
+@property(nonatomic,strong)UISwipeGestureRecognizer *topSwipe;//上滑手势
+@property(nonatomic,strong)UISwipeGestureRecognizer *bottomSwipe;//下滑手势
 @property(nonatomic,strong)LXCalendarDayModel *selectModel;
 
 
@@ -74,6 +76,16 @@
     self.rightSwipe.direction = UISwipeGestureRecognizerDirectionRight;
     
     [self.collectionView addGestureRecognizer:self.rightSwipe];
+    
+    self.topSwipe =[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(topSwipe:)];
+    self.topSwipe.direction = UISwipeGestureRecognizerDirectionUp;
+    
+    [self.collectionView addGestureRecognizer:self.topSwipe];
+    
+    self.bottomSwipe =[[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(bottomSwipe:)];
+    self.bottomSwipe.direction = UISwipeGestureRecognizerDirectionDown;
+    
+    [self.collectionView addGestureRecognizer:self.bottomSwipe];
 }
 #pragma mark --左滑手势--
 -(void)leftSwipe:(UISwipeGestureRecognizer *)swipe{
@@ -100,12 +112,37 @@
    
     [self rightSlide];
 }
+#pragma mark --上滑手势--
+-(void)topSwipe:(UISwipeGestureRecognizer *)swipe{
+    
+    [self topSlide];
+}
+#pragma mark --上滑处理--
+-(void)topSlide{
+    self.currentMonthDate = [self.currentMonthDate nextMonthDate];
+    
+    [self performAnimations:kCATransitionFromTop];
+    [self responData];
+}
+#pragma mark --下滑处理--
+-(void)bottomSlide{
+    
+    self.currentMonthDate = [self.currentMonthDate previousMonthDate];
+    [self performAnimations:kCATransitionFromBottom];
+    
+    [self responData];
+}
+#pragma mark --下滑手势--
+-(void)bottomSwipe:(UISwipeGestureRecognizer *)swipe{
+    
+    [self bottomSlide];
+}
 #pragma mark--动画处理--
 - (void)performAnimations:(NSString *)transition{
     CATransition *catransition = [CATransition animation];
     catransition.duration = 0.5;
     [catransition setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-    catransition.type = kCATransitionPush; //choose your animation
+    catransition.type = kCATransitionReveal; //choose your animation
     catransition.subtype = transition;
     [self.collectionView.layer addAnimation:catransition forKey:nil];
 }
@@ -345,7 +382,7 @@
 -(void)setIsCanScroll:(BOOL)isCanScroll{
     _isCanScroll = isCanScroll;
     
-    self.leftSwipe.enabled = self.rightSwipe.enabled = isCanScroll;
+    self.leftSwipe.enabled = self.rightSwipe.enabled = self.topSwipe.enabled = self.bottomSwipe.enabled = isCanScroll;
 }
 
 /*
